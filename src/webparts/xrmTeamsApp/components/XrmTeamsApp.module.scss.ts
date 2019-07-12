@@ -1,18 +1,18 @@
 /* tslint:disable */
 require("./XrmTeamsApp.module.css");
 const styles = {
-  xrmTeamsApp: 'xrmTeamsApp_e1d1200f',
-  container: 'container_e1d1200f',
-  row: 'row_e1d1200f',
-  column: 'column_e1d1200f',
-  'ms-Grid': 'ms-Grid_e1d1200f',
-  columnlarge: 'columnlarge_e1d1200f',
-  columnsmall: 'columnsmall_e1d1200f',
-  title: 'title_e1d1200f',
-  subTitle: 'subTitle_e1d1200f',
-  description: 'description_e1d1200f',
-  button: 'button_e1d1200f',
-  label: 'label_e1d1200f',
+  xrmTeamsApp: 'xrmTeamsApp_3f537b7a',
+  container: 'container_3f537b7a',
+  row: 'row_3f537b7a',
+  column: 'column_3f537b7a',
+  'ms-Grid': 'ms-Grid_3f537b7a',
+  columnlarge: 'columnlarge_3f537b7a',
+  columnsmall: 'columnsmall_3f537b7a',
+  title: 'title_3f537b7a',
+  subTitle: 'subTitle_3f537b7a',
+  description: 'description_3f537b7a',
+  button: 'button_3f537b7a',
+  label: 'label_3f537b7a',
 };
 
 export default styles;

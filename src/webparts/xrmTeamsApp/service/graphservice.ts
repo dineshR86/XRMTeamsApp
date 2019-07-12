@@ -35,7 +35,9 @@ export class graphservice{
 
     if(typeof filters.Title != "undefined"){
         for(let i in filters.Title){
-            if(i=="0"){
+            if(casefilter.length>0){
+                casefilter=casefilter.concat(` or substringof('${filters.Title[0]}',Title)`);
+            }else{
                 casefilter=`$filter=substringof('${filters.Title[0]}',Title)`;
             }
         }
