@@ -6,5 +6,5 @@ export interface Icaseitem{
     client?:string;
     status?:string;
     category?:string;
-    Id:string;
+    Id?:string;
 }

@@ -24,8 +24,8 @@ export default class XrmTeamsAppWebPart extends BaseClientSideWebPart<IXrmTeamsA
   private _graphservice:graphservice;
 
   protected onInit(): Promise<any> {
-    SPComponentLoader.loadCss("https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css");
-    console.log("webpart init");
+    //SPComponentLoader.loadCss("https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css");
+   // console.log("webpart init");
     let retVal: Promise<any> = Promise.resolve();
     if (this.context.microsoftTeams) {
       retVal = new Promise((resolve, reject) => {
@@ -36,7 +36,7 @@ export default class XrmTeamsAppWebPart extends BaseClientSideWebPart<IXrmTeamsA
       });
     }
 
-    this._graphservice=new graphservice(this.context.msGraphClientFactory);
+    this._graphservice=new graphservice(this.context.msGraphClientFactory,this.context.spHttpClient);
     return retVal;
   }
 

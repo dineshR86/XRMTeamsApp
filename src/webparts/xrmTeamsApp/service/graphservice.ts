@@ -1,9 +1,11 @@
-import { MSGraphClientFactory, MSGraphClient } from "@microsoft/sp-http";
+import { MSGraphClientFactory, MSGraphClient,SPHttpClient, ISPHttpClientOptions, SPHttpClientResponse } from "@microsoft/sp-http";
 import { Icaseitem } from "../model/Icaseitem";
 import { Ilookupitem } from "../model/Ilookupitem";
 
 export class graphservice{
     private _contextGraph:MSGraphClientFactory;
+    private _spclient:SPHttpClient;
+    private _weburl:string="https://cloudmission.sharepoint.com/sites/xrmtrial/";
     private _siteid:string="cloudmission.sharepoint.com,fe171266-80d5-48e2-aac1-dd25051f3418,b1aa755f-a790-4cc3-9c20-a83dc3e92428";
     private _listid:string="3370e94e-b0a6-43da-8a86-64e7470ca1dc";
     private _categorylistid:string="8a9bd817-d9b5-467f-a8dc-6cc0161973f9";
@@ -12,102 +14,148 @@ export class graphservice{
     
     //private _querystring:string="$expand=fields($select=Title,Column1,Column2,Column3,id)&$select=id,fields";
 
-    constructor(contextGraph:MSGraphClientFactory){
+    constructor(contextGraph:MSGraphClientFactory,spclient:SPHttpClient){
         console.log("service constructor");
         this._contextGraph=contextGraph;
+        this._spclient=spclient;
     }
 
-    public GetListItems():Promise<any>{
-        //debugger;
-        let queryurl:string=`sites/${this._siteid}/lists/${this._listid}/items?select=id,fields/Title,fields/Deadline,fields/Responsible,fields/billable,fields/ClientLookupid,fields/StatusLookupid,fields/categorylookupid&expand=fields`;
+    public GetXRMCases(filters?:any):Promise<any>{
+        debugger;
+        let casefilter:string="";
+        if(typeof filters.status != "undefined"){
+        for(let i in filters.status){
+            if(i=="0"){
+                casefilter=`$filter=StatusId eq ${filters.status[i]}`;
+            }else{
+            casefilter= casefilter.concat(`or StatusId eq ${filters.status[i]}`)
+        }
+        }
+    }
 
-        return this._contextGraph.getClient().then((client:MSGraphClient)=>{
-            console.log("From client:", client);
-            return client.api(queryurl).get().then((response)=>{
-                console.log("From graph ",response);
-                return response;
+    if(typeof filters.Title != "undefined"){
+        for(let i in filters.Title){
+            if(i=="0"){
+                casefilter=`$filter=substringof('${filters.Title[0]}',Title)`;
+            }
+        }
+    }
+        const querygetAllItems = `${this._weburl}_api/web/lists(guid'${this._listid}')/items?$select=Title,Id,ClientId,StatusId,CategoryId,Deadline,Billable&$orderby=Id desc&${casefilter}`;
+        return this._spclient.get(querygetAllItems, SPHttpClient.configurations.v1).then(
+            (response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                }
+                else { return Promise.reject(new Error(JSON.stringify(response))); }
+            })
+            .then((data: any) => {
+               return data;
+            }).catch((ex) => {
+                console.log("Error while fetching XRMCases: ", ex);
+                throw ex;
             });
-        })
-        .catch((error: any) => {
-            console.log("Error: ", error);
-        });
     }
 
-    public GetClients():Promise<any>{
-        //debugger;
-        let queryurl:string=`sites/${this._siteid}/lists/${this._clientslistid}/items?select=id,fields/Title&expand=fields`;
-
-        return this._contextGraph.getClient().then((client:MSGraphClient)=>{
-            return client.api(queryurl).get().then((response)=>{
+    public GetXRMClients():Promise<Ilookupitem[]>{
+        const querygetAllItems = `${this._weburl}_api/web/lists(guid'${this._clientslistid}')/items?$select=Title,Id`;
+        return this._spclient.get(querygetAllItems, SPHttpClient.configurations.v1).then(
+            (response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                }
+                else { return Promise.reject(new Error(JSON.stringify(response))); }
+            })
+            .then((data: any) => {
                 let clientitems:Ilookupitem[]=[];
-                response.value.forEach((item) => {
+                data.value.forEach((item) => {
                     let nitem:Ilookupitem={
-                        Id:item.id,
-                        Title:item.fields.Title
+                        Id:item.ID,
+                        Title:item.Title
                     };                   
                     clientitems.push(nitem);
                 });
                 return clientitems;
+            }).catch((ex) => {
+                console.log("Error while fetching clients: ", ex);
+                throw ex;
             });
-        })
-        .catch((error: any) => {
-            console.log("Error: ", error);
-        });
     }
 
-    public GetCategory():Promise<any>{
-        //debugger;
-        let queryurl:string=`sites/${this._siteid}/lists/${this._categorylistid}/items?select=id,fields/Title&expand=fields`;
-
-        return this._contextGraph.getClient().then((client:MSGraphClient)=>{
-            return client.api(queryurl).get().then((response)=>{
-                let categoryitems:Ilookupitem[]=[];
-                response.value.forEach((item) => {
-                    let nitem:Ilookupitem={
-                        Id:item.id,
-                        Title:item.fields.Title
-                    };                   
-                    categoryitems.push(nitem);
-                });
-                return categoryitems;
-            });
-        })
-        .catch((error: any) => {
-            console.log("Error: ", error);
-        });
-    }
-
-    public GetStatuses():Promise<any>{
-        //debugger;
-        let queryurl:string=`sites/${this._siteid}/lists/${this._statuseslistid}/items?select=id,fields/Title&expand=fields`;
-
-        return this._contextGraph.getClient().then((client:MSGraphClient)=>{
-            return client.api(queryurl).get().then((response)=>{
+    public GetXRMStatuses():Promise<Ilookupitem[]>{
+        const querygetAllItems = `${this._weburl}_api/web/lists(guid'${this._statuseslistid}')/items?$select=Title,Id`;
+        return this._spclient.get(querygetAllItems, SPHttpClient.configurations.v1).then(
+            (response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                }
+                else { return Promise.reject(new Error(JSON.stringify(response))); }
+            })
+            .then((data: any) => {
                 let statusesitems:Ilookupitem[]=[];
-                response.value.forEach((item) => {
+                data.value.forEach((item) => {
                     let nitem:Ilookupitem={
-                        Id:item.id,
-                        Title:item.fields.Title
+                        Id:item.ID,
+                        Title:item.Title
                     };                   
                     statusesitems.push(nitem);
                 });
                 return statusesitems;
+            }).catch((ex) => {
+                console.log("Error while fetching Status: ", ex);
+                throw ex;
             });
-        })
-        .catch((error: any) => {
-            console.log("Error: ", error);
-        });
     }
 
-    public PostXRMCases(xrmcase:any):Promise<any>{
-        let queryurl:string=`https://graph.microsoft.com/v1.0/sites/${this._siteid}/lists/${this._listid}/items`;
-        return this._contextGraph.getClient().then((client:MSGraphClient)=>{
-            return client.api(queryurl).post(xrmcase).then((response)=>{
-                return response;
+    public GetXRMCategories():Promise<any>{
+        const querygetAllItems = `${this._weburl}_api/web/lists(guid'${this._categorylistid}')/items?$select=Title,Id`;
+        return this._spclient.get(querygetAllItems, SPHttpClient.configurations.v1).then(
+            (response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                }
+                else { return Promise.reject(new Error(JSON.stringify(response))); }
+            })
+            .then((data: any) => {
+                let categoryitems:Ilookupitem[]=[];
+                data.value.forEach((item) => {
+                    let nitem:Ilookupitem={
+                        Id:item.ID,
+                        Title:item.Title
+                    };                   
+                    categoryitems.push(nitem);
+                });
+                return categoryitems;
+            }).catch((ex) => {
+                console.log("Error while fetching clients: ", ex);
+                throw ex;
             });
-        })
-        .catch((error: any) => {
-            console.log("Error: ", error);
-        });
     }
+
+    public AddXRMCase(xrmcase:any):Promise<any>{
+        const addcaseurl:string=`${this._weburl}_api/web/lists(guid'${this._listid}')/items`;
+        const httpclientoptions:ISPHttpClientOptions={
+            body:JSON.stringify(xrmcase)
+        };
+
+        return this._spclient.post(addcaseurl, SPHttpClient.configurations.v1, httpclientoptions)
+            .then((response: SPHttpClientResponse) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.status;
+                }
+                else { return Promise.reject(new Error(JSON.stringify(response))); }
+            });
+
+    }
+
+    // public PostXRMCases(xrmcase:any):Promise<any>{
+    //     let queryurl:string=`https://graph.microsoft.com/v1.0/sites/${this._siteid}/lists/${this._listid}/items`;
+    //     return this._contextGraph.getClient().then((client:MSGraphClient)=>{
+    //         return client.api(queryurl).post(xrmcase).then((response)=>{
+    //             return response;
+    //         });
+    //     })
+    //     .catch((error: any) => {
+    //         console.log("Error: ", error);
+    //     });
+    // }
 }

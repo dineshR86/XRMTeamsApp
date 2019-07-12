@@ -1,135 +1,218 @@
 import * as React from 'react';
 import { autobind } from 'office-ui-fabric-react/lib/Utilities';
+import { Button, Modal,Select,DatePicker,Radio,Icon } from 'antd';
 import { Ilookupitem } from '../model/Ilookupitem';
 import { Icaseitem } from '../model/Icaseitem';
 import { graphservice } from '../service/graphservice';
 
+const { Option } = Select;
+
 export interface XrmitemformProps {
-  isNewForm: boolean;
-  clients: Ilookupitem[];
-  status: Ilookupitem[];
-  category: Ilookupitem[];
-  graphservice: graphservice;
+  isNewForm?: boolean;
+  clients?: Ilookupitem[];
+  status?: Ilookupitem[];
+  category?: Ilookupitem[];
+  graphservice?: graphservice;
+  addcase?:any;
 }
 
 export interface XrmitemformState {
-  title: string;
-  client: string;
-  status: string;
-  category: string;
-  billable: boolean;
-  isSuccess:boolean;
-  isError:boolean;
+  modalvisible: boolean;
+  modalsave: boolean;
+  title?:string;
+  clientid?:string;
+  statusid?:string;
+  categoryid?:string;
+  deadline?:string;
+  billable?:boolean;
+  
 }
 
 export class Xrmitemform extends React.Component<XrmitemformProps, XrmitemformState>{
 
   constructor(props: XrmitemformProps) {
     super(props);
-    console.log("App constructor");
     this.state = {
-      title: "",
-      client: "",
-      status: "",
-      category: "",
-      billable: false,
-      isSuccess:false,
-      isError:false
+      modalvisible: false,
+      modalsave: false,
+      billable:false
     };
 
   }
 
-  @autobind
-  public handleTitleChange(event) {
-    this.setState({ title: event.target.value });
-  }
-
-  @autobind
-  public handleClientChange(event) {
-    this.setState({ client: event.target.value });
-  }
-
-  @autobind
-  public handleStatusChange(event) {
-    this.setState({ status: event.target.value });
-  }
-
-  @autobind
-  public handleCategoryChange(event) {
-    this.setState({ category: event.target.value });
-  }
-
-  @autobind
-  public handleBillableChange(event) {
-    this.setState({ billable: event.target.checked });
-  }
-
-  @autobind
-  public handleSubmit(event) {
+  public handleOk = (e) => {
     debugger;
-    const { title, client, status, category, billable } = this.state;
+    this.setState({ modalsave: true });
+    const { title, clientid, statusid, categoryid, billable } = this.state;
     const xrmcase = {
-      fields: {
         Title: title,
         Billable: billable,
-        ClientLookupId: client,
-        StatusLookupId: status,
-        CategoryLookupId: category
-      }
+        ClientId: clientid,
+        StatusId: statusid,
+        CategoryId: categoryid
     };
 
-    this.props.graphservice.PostXRMCases(xrmcase).then((result) => {
+    this.props.graphservice.AddXRMCase(xrmcase).then((result) => {
       console.log("post success: ", result);
+      this.props.addcase();
       this.setState({
         title: "",
         billable: false,
-        client: "",
-        status: "",
-        category: "",
-        isSuccess:true
+        clientid: "",
+        statusid: "",
+        categoryid: "",
+        modalsave:false,
+        modalvisible:false
       });
     }).catch((error: any) => {
       console.log("Error: ", error);
     });
-
-    //event.preventDefault();
   }
+
+  public handleCancel = (e) => {
+    console.log(e);
+    this.setState({
+      modalvisible: false
+    });
+  }
+
+  public showModal = () => {
+    this.setState({
+      modalvisible: true
+    });
+  }
+
+  public titleChange=(e)=>{
+    //debugger;
+    //console.log(e.currentTarget.value);
+    this.setState({title:e.currentTarget.value});
+
+  }
+
+  public caseChange=(value)=>{
+    console.log("Case selected: ",value);
+    this.setState({clientid:value});
+  }
+
+  public statusChange=(value)=>{
+    //console.log("Case selected: ",value);
+    this.setState({statusid:value});
+  }
+
+  public categoryChange=(value)=>{
+    //console.log("Case selected: ",value);
+    this.setState({categoryid:value});
+  }
+
+  public onDateChange=(date,dateString)=>{
+    console.log(date, dateString);
+    this.setState({deadline:date});
+  }
+
+  public onBillableChange=(e)=>{
+    this.setState({billable:e.target.value});
+  }
+
+  
 
   public render(): React.ReactElement<XrmitemformProps> {
     return (
       <div>
-        {this.state.isSuccess ?<div className="alert alert-success" role="alert">Case created successfully! refresh the app</div>:""}
-        {this.state.isError?<div className="alert alert-danger" role="alert">A simple danger alert—check it out!</div>:""}
-        <div className="form-group">
-          <label>Title</label>
-          <input type="text" className="form-control" id="exampleFormControlInput1" placeholder="Enter the Case Title" value={this.state.title} onChange={this.handleTitleChange} />
+        <div className="icons-list">
+        <Icon type="file-add" theme="twoTone" onClick={this.showModal} />
         </div>
-        <div className="form-group">
-          <label>Client</label>
-          <select className="form-control" id="exampleFormControlSelect1" value={this.state.client} onChange={this.handleClientChange} >
-            <option value="" selected>-select-</option>
-            {this.props.clients.map((item, index) => <option value={item.Id} key={index}>{item.Title}</option>)}
-          </select>
-        </div>
-        <div className="form-group">
-          <label>Status</label>
-          <select className="form-control" id="exampleFormControlSelect2" value={this.state.status} onChange={this.handleStatusChange}>
-            <option value="" selected>-select-</option>
-            {this.props.status.map((item, index) => <option value={item.Id} key={index}>{item.Title}</option>)}
-          </select>
-        </div>
-        <div className="form-group">
-          <label>Category</label>
-          <select className="form-control" id="exampleFormControlSelect2" value={this.state.category} onChange={this.handleCategoryChange}>
-            <option value="" selected>-select-</option>
-            {this.props.category.map((item, index) => <option value={item.Id} key={index}>{item.Title}</option>)}
-          </select>
-        </div>
-        <div className="custom-control custom-switch">
-          <input type="checkbox" className="custom-control-input" id="customSwitch1" checked={this.state.billable} onChange={this.handleBillableChange} />
-          <label className="custom-control-label" htmlFor="customSwitch1">Billable</label>
-        </div>
-        <button type="button" className="btn btn-primary" onClick={this.handleSubmit}>Submit</button>
+        <Modal
+          title="New Case"
+          visible={this.state.modalvisible}
+          onOk={this.handleOk}
+          onCancel={this.handleCancel}
+          okText="Submit"
+          confirmLoading={this.state.modalsave}
+        >
+          <div className="ant-form ant-form-vertical">
+            <div className="ant-row ant-form-item">
+              <div className="ant-col ant-form-item-label">
+                <label>Title</label>
+              </div>
+              <div className="ant-col ant-form-item-control-wrapper">
+                <div className="ant-form-item-control">
+                  <span className="ant-form-item-children">
+                    <input type="text" className="ant-input" placeholder="Case Title" onChange={this.titleChange} />
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="ant-row ant-form-item">
+              <div className="ant-col ant-form-item-label">
+                <label>Client</label>
+              </div>
+              <div className="ant-col ant-form-item-control-wrapper">
+                <div className="ant-form-item-control">
+                  <span className="ant-form-item-children">
+                   <Select placeholder="Please select a client" style={{ width: 120 }} onChange={this.caseChange}>
+                     {this.props.clients.map((client:Ilookupitem,index)=> <Option value={client.Id} key={index}>{client.Title}</Option>)}
+                   </Select>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="ant-row ant-form-item">
+              <div className="ant-col ant-form-item-label">
+                <label>Status</label>
+              </div>
+              <div className="ant-col ant-form-item-control-wrapper">
+                <div className="ant-form-item-control">
+                  <span className="ant-form-item-children">
+                   <Select placeholder="Please select a status" style={{ width: 120 }} onChange={this.statusChange}>
+                   {this.props.status.map((sta:Ilookupitem,index)=> <Option value={sta.Id} key={index}>{sta.Title}</Option>)}
+                   </Select>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="ant-row ant-form-item">
+              <div className="ant-col ant-form-item-label">
+                <label>Categories</label>
+              </div>
+              <div className="ant-col ant-form-item-control-wrapper">
+                <div className="ant-form-item-control">
+                  <span className="ant-form-item-children">
+                   <Select placeholder="Please select a Categorie" style={{ width: 120 }} onChange={this.categoryChange}>
+                    {this.props.category.map((catg:Ilookupitem,index)=> <Option value={catg.Id} key={index}>{catg.Title}</Option>)}
+                   </Select>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="ant-row ant-form-item">
+              <div className="ant-col ant-form-item-label">
+                <label>Deadline</label>
+              </div>
+              <div className="ant-col ant-form-item-control-wrapper">
+                <div className="ant-form-item-control">
+                  <span className="ant-form-item-children">
+                   <DatePicker onChange={this.onDateChange} />
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="ant-row ant-form-item">
+              <div className="ant-col ant-form-item-label">
+                <label>Billable</label>
+              </div>
+              <div className="ant-col ant-form-item-control-wrapper">
+                <div className="ant-form-item-control">
+                  <span className="ant-form-item-children">
+                   <Radio.Group value={this.state.billable} onChange={this.onBillableChange}>
+                     <Radio value={false}>No</Radio>
+                     <Radio value={true}>Yes</Radio>
+                     </Radio.Group>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
       </div>
     );
   }
