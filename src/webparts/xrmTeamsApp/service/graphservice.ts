@@ -28,7 +28,7 @@ export class graphservice{
             if(i=="0"){
                 casefilter=`$filter=StatusId eq ${filters.status[i]}`;
             }else{
-            casefilter= casefilter.concat(`or StatusId eq ${filters.status[i]}`)
+            casefilter= casefilter.concat(`or StatusId eq ${filters.status[i]}`);
         }
         }
     }

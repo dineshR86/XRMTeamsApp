@@ -2,7 +2,6 @@ import * as React from 'react';
 import * as microsoftTeams from '@microsoft/teams-js';
 import * as moment from 'moment';
 import { Row, Col, Layout, Table, Button, Input, Icon } from 'antd';
-import Highlighter from 'react-highlight-words';
 import './XrmTeamsApp.module.css';
 import { graphservice } from '../service/graphservice';
 import { Icaseitem } from '../model/Icaseitem';
@@ -182,18 +181,18 @@ export class XrmTeamsApp extends React.Component<IXrmTeamsAppProps, IXRMTeamAppS
     filterIcon: filtered => (
       <Icon type="search" style={{ color: filtered ? '#1890ff' : undefined }} />
     ),
-  });
+  })
 
   public handleSearch = (selectedKeys, confirm) => {
     debugger;
     confirm();
     this.setState({ searchText: selectedKeys[0] });
-  };
+  }
 
   public handleReset = clearFilters => {
     clearFilters();
     this.setState({ searchText: '' });
-  };
+  }
 
   public render(): React.ReactElement<IXrmTeamsAppProps> {
     const { Header, Content, Footer } = Layout;
