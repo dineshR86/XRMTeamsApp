@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { autobind } from 'office-ui-fabric-react/lib/Utilities';
-import { Button, Modal,Select,DatePicker,Radio,Icon } from 'antd';
+import { Modal,Select,DatePicker,Radio,Icon,Button } from 'antd';
 import { Ilookupitem } from '../model/Ilookupitem';
 import { Icaseitem } from '../model/Icaseitem';
 import { graphservice } from '../service/graphservice';
@@ -118,8 +117,9 @@ export class Xrmitemform extends React.Component<XrmitemformProps, XrmitemformSt
   public render(): React.ReactElement<XrmitemformProps> {
     return (
       <div>
-        <div className="icons-list">
-        <Icon type="file-add" theme="twoTone" onClick={this.showModal} />
+        <div>
+        {/* <Icon type="file-add" theme="twoTone"  style={{fontSize:'30px',float:'right'}} /> <Icon type="plus-square" theme="twoTone" /> */}
+        <Button icon="plus-square" onClick={this.showModal} style={{marginLeft:"90%"}} >Add Case</Button>
         </div>
         <Modal
           title="New Case"

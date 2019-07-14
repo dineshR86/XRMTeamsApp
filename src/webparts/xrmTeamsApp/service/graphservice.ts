@@ -53,6 +53,7 @@ export class graphservice{
             .then((data: any) => {
                return data;
             }).catch((ex) => {
+                debugger;
                 console.log("Error while fetching XRMCases: ", ex);
                 throw ex;
             });

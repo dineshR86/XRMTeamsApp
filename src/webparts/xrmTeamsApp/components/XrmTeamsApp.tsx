@@ -1,11 +1,10 @@
 import * as React from 'react';
 import * as microsoftTeams from '@microsoft/teams-js';
 import * as moment from 'moment';
-import { Row, Col, Layout, Table, Button, Input, Icon } from 'antd';
+import { Row, Col, Layout, Table, Button, Input, Icon,Alert } from 'antd';
 import './XrmTeamsApp.module.css';
 import { graphservice } from '../service/graphservice';
 import { Icaseitem } from '../model/Icaseitem';
-import { XrmListitem } from './XrmListItem';
 import { Xrmitemform } from './Xrmitemform';
 import { Ilookupitem } from '../model/Ilookupitem';
 
@@ -24,6 +23,7 @@ export interface IXRMTeamAppState {
   _statuses:Ilookupitem[];
   _category:Ilookupitem[];
   searchText:string;
+  errormessage:string;
 }
 
 
@@ -40,7 +40,8 @@ export class XrmTeamsApp extends React.Component<IXrmTeamsAppProps, IXRMTeamAppS
       _clients:[],
       _category:[],
       _statuses:[],
-      searchText:''
+      searchText:'',
+      errormessage:''
     };
   }
 
@@ -79,7 +80,10 @@ export class XrmTeamsApp extends React.Component<IXrmTeamsAppProps, IXRMTeamAppS
               loading: false,
               pagination
             });
-          });
+          }).catch((ex) => {
+            console.log("Error while fetching XRMCases: ", ex);
+            this.setState({loading:false,errormessage:ex});
+        });
         });
       });
     });
@@ -90,6 +94,7 @@ export class XrmTeamsApp extends React.Component<IXrmTeamsAppProps, IXRMTeamAppS
     debugger;
     const pager = { ...this.state.pagination };
     pager.current = pagination.current;
+    if(typeof filters.status != "undefined" ||typeof filters.Title != "undefined"){
     this.setState({loading:true});
     this.props.graphservice.GetXRMCases(filters).then((resultit) => {
       let items: Icaseitem[] = [];
@@ -111,12 +116,18 @@ export class XrmTeamsApp extends React.Component<IXrmTeamsAppProps, IXRMTeamAppS
 
         items.push(nitem);
       });
+      pagination.total=items.length;
       this.setState({
         listItems: items,
         loading: false,
         pagination
       });
-    });
+    }).catch((ex) => {
+      console.log("Error while fetching XRMCases: ", ex);
+      this.setState({loading:false,errormessage:"The attempted operation is prohibited because it exceeds the list view threshold enforced by the administrator"});
+  });
+
+  }
   }
 
   public addnewcase=()=>{
@@ -148,7 +159,10 @@ export class XrmTeamsApp extends React.Component<IXrmTeamsAppProps, IXRMTeamAppS
         loading: false,
         pagination
       });
-    });
+    }).catch((ex) => {
+      console.log("Error while fetching XRMCases: ", ex);
+      this.setState({loading:false,errormessage:ex});
+  });
   }
 
   public getColumnSearchProps = dataIndex => ({
@@ -228,8 +242,6 @@ export class XrmTeamsApp extends React.Component<IXrmTeamsAppProps, IXRMTeamAppS
     
     ];
     
-    
-
     return (
       <div>
         <Layout className="layout">
@@ -242,6 +254,7 @@ export class XrmTeamsApp extends React.Component<IXrmTeamsAppProps, IXRMTeamAppS
               <Row gutter={16}>
                 <Col className="gutter-row" span={24}>
                   <div className="gutter-box">
+    {this.state.errormessage.length>0?<Alert message="Error Message" description={this.state.errormessage} type="error" closable />:<br /> }
                     <Xrmitemform clients={this.state._clients} status={this.state._statuses} category={this.state._category} graphservice={this.props.graphservice} addcase={this.addnewcase} />
                     <Table dataSource={this.state.listItems} columns={columns} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} />
                   </div>

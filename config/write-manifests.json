@@ -1,4 +1,4 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/write-manifests.schema.json",
-  "cdnBasePath": "https://oaktondidata.sharepoint.com/SiteAssets/SPFX/xrmteamsapp"
+  "cdnBasePath": "https://cloudmission.sharepoint.com/sites/xrmtrial/SiteAssets/XRMTeamsApp"
 }
